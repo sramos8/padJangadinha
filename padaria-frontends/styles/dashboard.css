@@ -1,0 +1,37 @@
+body {
+  background: linear-gradient(135deg, #3a0ca3, #4361ee);
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.dashboard-container {
+  padding: 2rem;
+}
+
+.dashboard-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #4cc9f0;
+}
+
+.dashboard-subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: #bdbdbd;
+}
+
+.btn-primary {
+  background-color: #4895ef;
+  border: none;
+  border-radius: 25px;
+  padding: 0.75rem 1.5rem;
+  font-weight: bold;
+}
+
+.card {
+  background-color: #240046;
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  color: white;
+}
