@@ -15,6 +15,9 @@ export default function ListaVendas() {
           api.get('/produtos'),
         ]);
 
+        console.log('Vendas:', vendasRes.data);
+        console.log('Produtos:', produtosRes.data);
+
         setVendas(vendasRes.data);
 
         const map = {};
@@ -52,6 +55,7 @@ export default function ListaVendas() {
             <th className="p-2 border">Quantidade</th>
             <th className="p-2 border">Total (R$)</th>
             <th className="p-2 border">Data</th>
+            <th className="p-2 border">Funcionário Responsável</th>
             <th className="p-2 border">Ações</th>
           </tr>
         </thead>
@@ -62,6 +66,7 @@ export default function ListaVendas() {
               <td className="border p-2">{venda.quantidade}</td>
               <td className="border p-2">{venda.total?.toFixed(2)}</td>
               <td className="border p-2">{new Date(venda.created_at).toLocaleString()}</td>
+              <td className="border p-2">{venda.user?.nome || 'Desconhecido'}</td>
               <td className="border p-2">
                 <button
                   onClick={() => excluirVenda(venda.id)}

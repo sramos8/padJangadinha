@@ -62,6 +62,9 @@ export default function Estoque() {
       .catch(err => console.error('Erro ao buscar estoque:', err));
   }, []);
 
+  console.log('Produtos:', produtos);
+  console.log('Estoque:', estoque); 
+  
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Estoque de Produtos</h1>
@@ -70,13 +73,15 @@ export default function Estoque() {
           <tr className="bg-gray-200">
             <th className="p-2 border">Produto</th>
             <th className="p-2 border">Quantidade em Estoque</th>
+            <th className="p-2 border">Funcionário Responsável</th>
           </tr>
         </thead>
         <tbody>
           {estoque.map(item => (
             <tr key={item.id} className="text-center">
-              <td className="p-2 border">{produtos[item.produto_id] || 'Produto desconhecido'}</td>
+              <td className="p-2 border">{item.nome || 'Produto desconhecido'}</td>
               <td className="p-2 border">{item.quantidade}</td>
+              <td className="p-2 border">{item.users?.nome || '-'}</td>
             </tr>
           ))}
         </tbody>

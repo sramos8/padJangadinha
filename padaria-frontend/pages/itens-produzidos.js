@@ -138,6 +138,7 @@ export default function ItensProduzidos() {
                       <th>Quantidade</th>
                       <th>Unidade</th>
                       <th>Hora</th>
+                      <th className="text-center">Usuário</th>
                       <th>Ações</th>
                     </tr>
                   </thead>
@@ -148,6 +149,7 @@ export default function ItensProduzidos() {
                         <td>{item.quantidade}</td>
                         <td>{item.unidade}</td>
                         <td>{new Date(item.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</td>
+                        <td className="text-center">{item.owner?.nome || '—'}</td>
                         <td className="space-x-2">
                         <button onClick={() => editar(item)} className="btn btn-sm btn-warning">Editar</button>
                         <button onClick={() => remover(item.id)} className="btn btn-sm btn-danger">Excluir</button>
