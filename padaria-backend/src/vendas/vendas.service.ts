@@ -34,39 +34,60 @@ export class VendasService {
   }
 }
  */
-// src/vendas/vendas.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { supabase } from '../supabase/supabase.client';
 
 @Injectable()
 export class VendasService {
   async findAll() {
-    const { data, error } = await supabase.from('vendas').select('*');
+    const { data, error } = await supabase
+      .from('vendas')
+      .select('id, produto_id, quantidade, total, created_at, owner_id, users!fk_owner(nome)')
+      .order('created_at', { ascending: false });
+
     if (error) throw error;
+    console.log('Vendas:', data);
     return data;
   }
 
-  async create(venda: { produto_id: string; quantidade: number }) {
-  // Busca o produto para pegar o preço
-  const { data: produto, error: produtoError } = await supabase
-    .from('produtos')
-    .select('preco')
-    .eq('id', venda.produto_id)
-    .single();
+  async create(venda: { produto_id: string; quantidade: number; owner_id: string }) {
+    // 1. Buscar produto e validar quantidade
+    const { data: produto, error: produtoError } = await supabase
+      .from('produtos')
+      .select('id, preco, quantidade')
+      .eq('id', venda.produto_id)
+      .single();
 
-  if (produtoError) throw produtoError;
+    if (produtoError) throw produtoError;
 
-  const total = produto.preco * venda.quantidade;
+    if (!produto) throw new BadRequestException('Produto não encontrado');
 
-  const { data, error } = await supabase
-    .from('vendas')
-    .insert([{ ...venda, total }])
-    .select();
+    if (produto.quantidade < venda.quantidade) {
+      throw new BadRequestException('Quantidade insuficiente em estoque');
+    }
 
-  if (error) throw error;
+    const total = produto.preco * venda.quantidade;
 
-  return data[0];
-}
+    // 2. Inserir venda com total e owner
+    const { data: vendaData, error: vendaError } = await supabase
+      .from('vendas')
+      .insert([{ ...venda, total }])
+      .select();
+
+    if (vendaError) throw vendaError;
+
+    // 3. Atualizar estoque
+    const novaQuantidade = produto.quantidade - venda.quantidade;
+
+    const { error: estoqueError } = await supabase
+      .from('produtos')
+      .update({ quantidade: novaQuantidade })
+      .eq('id', venda.produto_id);
+
+    if (estoqueError) throw estoqueError;
+
+    return vendaData[0];
+  }
 
   async update(id: string, venda: Partial<{ produto_id: string; quantidade: number; total: number }>) {
     const { data, error } = await supabase.from('vendas').update(venda).eq('id', id).select();

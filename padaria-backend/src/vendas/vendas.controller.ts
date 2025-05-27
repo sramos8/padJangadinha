@@ -19,6 +19,8 @@ export class VendasController {
 // src/vendas/vendas.controller.ts
 import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
 import { VendasService } from './vendas.service';
+import { Request } from 'express';
+import { Req } from '@nestjs/common';
 
 @Controller('vendas')
 export class VendasController {
@@ -30,9 +32,15 @@ export class VendasController {
   }
 
   @Post()
-  create(@Body() body: { produto_id: string; quantidade: number; total: number }) {
-    return this.vendasService.create(body);
-  }
+async create(@Body() body, @Req() req: Request) {
+  const user = req.user as { id: string };
+  const payload = {
+    ...body,
+    owner_id: user.id,
+  };
+  return this.vendasService.create(payload);
+}
+
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() body: Partial<{ produto_id: string; quantidade: number; total: number }>) {

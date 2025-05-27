@@ -1,29 +1,31 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Put, Delete, Req, UseGuards } from '@nestjs/common';
 import { ProdutosService } from './produtos.service';
-//import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { AuthGuard } from '../auth/auth.guard'; // ajuste conforme a localização do seu guard
+import { Request } from 'express';
 
-//@UseGuards(JwtAuthGuard)
 @Controller('produtos')
+@UseGuards(AuthGuard)
 export class ProdutosController {
   constructor(private readonly produtosService: ProdutosService) {}
 
   @Get()
-  findAll() {
+  async findAll() {
     return this.produtosService.findAll();
   }
 
-  @Post()
-  create(@Body() body: { nome: string; preco: number; quantidade: number }) {
-    return this.produtosService.create(body);
+ @Post()
+  async create(@Body() body, @Req() req: Request) {
+    const userId = req.user?.id;
+    return this.produtosService.create({ ...body, owner_id: userId });
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() body: Partial<{ nome: string; preco: number; quantidade: number }>) {
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() body) {
     return this.produtosService.update(id, body);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     return this.produtosService.remove(id);
   }
 }

@@ -3,7 +3,7 @@ import { supabase } from '../supabase/supabase.client';
 
 @Injectable()
 export class ItensProduzidoService {
-  async create(item: { produto_id: string; quantidade: number; unidade: string }) {
+  async create(item: { produto_id: string; quantidade: number; unidade: string; owner_id: string }) {
     const { data: produzido, error } = await supabase
       .from('itens_produzido')
       .insert([item])
