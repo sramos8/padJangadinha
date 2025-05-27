@@ -1,4 +1,14 @@
-import { Controller, Post, Get, Body, Param, Put, Delete, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  Put,
+  Delete,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { EstoqueService } from './estoque.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { Request } from 'express';
@@ -24,8 +34,11 @@ export class EstoqueController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() body) {
-    return this.estoqueService.update(id, body);
+  async update(
+    @Param('id') id: string,
+    @Body() data: { produto_id: string; quantidade: number; unidade: string }
+  ) {
+    return this.estoqueService.update(id, data);
   }
 
   @Delete(':id')

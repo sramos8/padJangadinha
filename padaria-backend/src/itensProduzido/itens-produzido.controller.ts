@@ -18,6 +18,24 @@ import * as jwt from 'jsonwebtoken';
 export class ItensProduzidoController {
   constructor(private readonly service: ItensProduzidoService) {}
 
+  private extrairUserId(req: Request): string {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader?.split(' ')[1];
+
+    if (!token) {
+      throw new BadRequestException('Token de autenticação ausente');
+    }
+
+    try {
+      const decoded = jwt.decode(token) as { sub: string };
+      const userId = decoded?.sub;
+      if (!userId) throw new Error();
+      return userId;
+    } catch {
+      throw new BadRequestException('Token inválido');
+    }
+  }
+
   @Post()
   async create(
     @Body() data: { produto_id: string; quantidade: number; unidade: string },
@@ -27,24 +45,8 @@ export class ItensProduzidoController {
       throw new BadRequestException('Campos obrigatórios: produto_id, quantidade, unidade');
     }
 
-    const authHeader = req.headers['authorization'];
-    const token = authHeader?.split(' ')[1];
+    const userId = this.extrairUserId(req);
 
-    if (!token) {
-      throw new BadRequestException('Token de autenticação ausente');
-    }
-
-    // ⚠️ Decodificação simples — para produção, use jwt.verify e configure chave secreta
-    let userId: string;
-    try {
-      const decoded = jwt.decode(token) as { sub: string };
-      userId = decoded?.sub;
-      if (!userId) throw new Error();
-    } catch {
-      throw new BadRequestException('Token inválido');
-    }
-
-    // Verifica se o produto existe
     const { data: produto, error } = await supabase
       .from('produtos')
       .select('nome')
@@ -56,37 +58,46 @@ export class ItensProduzidoController {
     }
 
     return this.service.create({
-      produto_id: data.produto_id,
-      quantidade: data.quantidade,
-      unidade: data.unidade,
-      owner_id: userId, // 👈 owner_id agora vem do token
+      ...data,
+      owner_id: userId,
     });
   }
 
   @Get()
   async findAll() {
-      const { data, error } = await supabase
-        .from('itens_produzido')
-        .select('id, produto_id, quantidade, unidade, criado_em, produtos(nome), owner:owner_id(nome)')
-        .order('criado_em', { ascending: false });
+    const { data, error } = await supabase
+      .from('itens_produzido')
+      .select('id, produto_id, quantidade, unidade, criado_em, produtos(nome), owner:owner_id(nome)')
+      .order('criado_em', { ascending: false });
 
-      if (error) {
-        throw new Error('Erro ao buscar itens produzidos');
-      }
-
-      return data;
+    if (error) {
+      throw new BadRequestException('Erro ao buscar itens produzidos');
     }
+
+    return data;
+  }
 
   @Put(':id')
   async update(
     @Param('id') id: string,
-    @Body() data: { produto_id: string; quantidade: number; unidade: string }
+    @Body() data: { quantidade: number; unidade?: string },
+    @Req() req: Request
   ) {
-    return this.service.update(id, data);
+    if (!data.quantidade) {
+      throw new BadRequestException('Campo quantidade é obrigatório');
+    }
+
+    const userId = this.extrairUserId(req);
+
+    return this.service.update(id, {
+      ...data,
+      owner_id: userId,
+    });
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  async remove(@Param('id') id: string, @Req() req: Request) {
+    const userId = this.extrairUserId(req);
+    return this.service.remove(id, userId);
   }
 }

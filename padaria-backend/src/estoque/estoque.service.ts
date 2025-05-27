@@ -18,7 +18,7 @@ async findAll() {
     return data[0];
   }
 
-  async update(id: string, item: Partial<{ produto_id: string; quantidade: number; unidade: string }>) {
+  async update(id: string, item: Partial<{ produto_id: string; quantidade: number; unidade: string, owner_id: string }>) {
     const { data, error } = await supabase.from('estoque').update(item).eq('id', id).select();
     if (error) throw error;
     return data[0];

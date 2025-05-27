@@ -15,6 +15,7 @@ export class ProdutosService {
 
   async create(produto: { nome: string; preco: number; quantidade: number; owner_id: string }) {
   const { data, error } = await supabase.from('produtos').insert([produto]).select();
+  console.log('Produto criado:', data);
   if (error) throw error;
   return data[0];
 }

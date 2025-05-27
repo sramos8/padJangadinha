@@ -28,8 +28,12 @@ export class ItensProduzidoService {
         .update({
           quantidade: estoqueExistente.quantidade + item.quantidade,
           unidade: item.unidade,
+          owner_id: item.owner_id,
         })
         .eq('produto_id', item.produto_id);
+        console.log('Owner ID atualizado no estoque:', item.owner_id);
+        console.log('Estoque existente', estoqueExistente);
+        console.log('Estoque owner verificar', estoqueExistente.owner_id);
     } else {
       await supabase
         .from('estoque')
@@ -37,6 +41,7 @@ export class ItensProduzidoService {
           produto_id: item.produto_id,
           quantidade: item.quantidade,
           unidade: item.unidade,
+          owner_id: item.owner_id,
         });
     }
 
@@ -52,6 +57,7 @@ export class ItensProduzidoService {
         .from('produtos')
         .update({
           quantidade: produtoAtual.quantidade + item.quantidade,
+          owner_id: item.owner_id
         })
         .eq('id', item.produto_id);
     }
@@ -66,7 +72,8 @@ export class ItensProduzidoService {
         *,
         produtos (
           id,
-          nome
+          nome,
+          owner_id,
         )
       `)
       .order('criado_em', { ascending: false });
@@ -79,7 +86,7 @@ export class ItensProduzidoService {
     return data;
   }
 
-  async update(id: string, itemAtualizado: { quantidade: number; unidade?: string }) {
+  async update(id: string, itemAtualizado: { quantidade: number; unidade?: string; owner_id: string }) {
     // Buscar item original
     const { data: itemOriginal, error: erroBusca } = await supabase
       .from('itens_produzido')
@@ -123,6 +130,7 @@ export class ItensProduzidoService {
         .update({
           quantidade: estoqueAtual.quantidade + diferenca,
           unidade: itemAtualizado.unidade || estoqueAtual.unidade,
+          owner_id: itemAtualizado.owner_id,
         })
         .eq('produto_id', itemOriginal.produto_id);
     } else {
@@ -133,6 +141,7 @@ export class ItensProduzidoService {
           produto_id: itemOriginal.produto_id,
           quantidade: itemAtualizado.quantidade,
           unidade: itemAtualizado.unidade || 'un',
+          owner_id: itemAtualizado.owner_id,
         });
     }
 
@@ -155,7 +164,7 @@ export class ItensProduzidoService {
     return itemAtualizadoFinal;
   }
 
-  async remove(id: string) {
+  async remove(id: string, owner_id: string) {
     // Buscar item original
     const { data: itemOriginal, error: erroBusca } = await supabase
       .from('itens_produzido')
@@ -190,6 +199,7 @@ export class ItensProduzidoService {
         .from('estoque')
         .update({
           quantidade: estoqueAtual.quantidade - itemOriginal.quantidade,
+          owner_id: owner_id,
         })
         .eq('produto_id', itemOriginal.produto_id);
     }
