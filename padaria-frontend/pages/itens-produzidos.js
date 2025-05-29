@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
-import { api } from '../lib/api';
+//import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
+import Cookies from 'js-cookie'
+import { useRouter } from 'next/router'
+import api from '../services/api'; // ou '@/services/api' se você usa paths personalizados
 
 export default function ItensProduzidos() {
   const [produtos, setProdutos] = useState([]);
@@ -9,13 +12,20 @@ export default function ItensProduzidos() {
   const [unidade, setUnidade] = useState('');
   const [lista, setLista] = useState([]);
   const [editandoId, setEditandoId] = useState(null);
+  const router = useRouter();
 
   useAuth();
 
   useEffect(() => {
-    carregarDados();
-  }, []);
-
+    const token = Cookies.get('token')
+    if (!token) {
+      router.push('/login')
+    }
+  }, [])
+  // Carrega os dados iniciais
+    useEffect(() => {
+        carregarDados();
+      }, []);
   const carregarDados = async () => {
     const [resProdutos, resItens] = await Promise.all([
       api.get('/produtos'),
