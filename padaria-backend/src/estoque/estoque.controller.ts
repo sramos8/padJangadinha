@@ -12,6 +12,7 @@ import {
 import { EstoqueService } from './estoque.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { Request } from 'express';
+import { supabase } from '../supabase/supabase.client';
 
 @Controller('estoque')
 @UseGuards(AuthGuard)
@@ -45,4 +46,10 @@ export class EstoqueController {
   async remove(@Param('id') id: string) {
     return this.estoqueService.remove(id);
   }
+
+  @Get('resumo')
+  async getResumoEstoque() {
+       return this.estoqueService.getResumoEstoque();
+  }
+
 }

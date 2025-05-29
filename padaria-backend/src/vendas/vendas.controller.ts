@@ -17,14 +17,35 @@ export class VendasController {
   }
 } */
 // src/vendas/vendas.controller.ts
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, BadRequestException } from '@nestjs/common';
 import { VendasService } from './vendas.service';
 import { Request } from 'express';
 import { Req } from '@nestjs/common';
+import { supabase } from '../supabase/supabase.client';
+import * as jwt from 'jsonwebtoken';
 
 @Controller('vendas')
 export class VendasController {
   constructor(private readonly vendasService: VendasService) {}
+
+private extrairUserId(req: Request): string {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader?.split(' ')[1];
+
+    if (!token) {
+      throw new BadRequestException('Token de autenticação ausente');
+    }
+
+    try {
+      const decoded = jwt.decode(token) as { sub: string };
+      const userId = decoded?.sub;
+      if (!userId) throw new Error();
+      return userId;
+    } catch {
+      throw new BadRequestException('Token inválido');
+    }
+  }
+
 
   @Get()
   findAll() {
@@ -33,10 +54,10 @@ export class VendasController {
 
   @Post()
 async create(@Body() body, @Req() req: Request) {
-  const user = req.user as { id: string };
+  const userId = this.extrairUserId(req);
   const payload = {
     ...body,
-    owner_id: user.id,
+    owner_id: userId,
   };
   return this.vendasService.create(payload);
 }
@@ -51,4 +72,9 @@ async create(@Body() body, @Req() req: Request) {
   remove(@Param('id') id: string) {
     return this.vendasService.remove(id);
   }
+  @Get('resumo')
+  async getResumo() {
+    return this.vendasService.getResumo();
+  }
+
 }

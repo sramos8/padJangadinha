@@ -6,6 +6,7 @@ import { ProdutosModule } from './produtos/produtos.module';
 import { VendasModule } from './vendas/vendas.module';
 import { EstoqueModule } from './estoque/estoque.module';
 import { ItensProduzidoModule } from './itensProduzido/itens-produzido.module';
+import { RelatorioModule } from './relatorio/relatorio.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ItensProduzidoModule } from './itensProduzido/itens-produzido.module';
     VendasModule,
     EstoqueModule,
     ItensProduzidoModule,
+    RelatorioModule,
   ],
 })
 export class AppModule {}
