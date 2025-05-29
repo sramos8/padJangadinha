@@ -100,4 +100,13 @@ export class VendasService {
     if (error) throw error;
     return { message: 'Venda removida com sucesso' };
   }
+
+  async getResumo() {
+    const { count, error } = await supabase
+      .from('vendas')
+      .select('*', { count: 'exact', head: true });
+
+    if (error) throw error;
+    return { total: count || 0 };
+  }
 }

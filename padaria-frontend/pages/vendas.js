@@ -1,12 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { api } from '../lib/api';
+//import { api } from '../lib/api';
+import Cookies from 'js-cookie';
+import { useRouter } from 'next/router';
+import api from '../services/api'; // ou '@/services/api' se você usa paths personalizados
 
 export default function Vendas() {
   const [produtos, setProdutos] = useState([]);
   const [produtoId, setProdutoId] = useState('');
   const [quantidade, setQuantidade] = useState('');
+  const router = useRouter();
+  // Verifica se o usuário está autenticado
   useAuth();
+
+  useEffect(() => {
+    const token = Cookies.get('token');
+    if (!token) {
+      router.push('/login');
+    }
+  }, []);
 
   useEffect(() => {
     api.get('/produtos').then(res => setProdutos(res.data)).catch(console.error);

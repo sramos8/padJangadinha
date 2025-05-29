@@ -29,4 +29,15 @@ async findAll() {
     if (error) throw error;
     return { message: 'Item de estoque removido com sucesso' };
   }
+
+   async getResumoEstoque() {
+    const { data, error } = await supabase
+      .from('estoque')
+      .select('quantidade');
+
+    if (error) throw error;
+
+    const total = data.reduce((acc, item) => acc + (item.quantidade || 0), 0);
+    return { total };
+  }
 }

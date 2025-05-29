@@ -4,12 +4,9 @@ export default function Document() {
   return (
     <Html lang="pt-BR">
       <Head>
-        <title>Padaria Jangadinha</title>
         <link rel="icon" href="/img/favicon.ico" />
         <meta name="description" content="Sistema de gerenciamento para padarias" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        
-        {/* Outros metadados opcionais */}
+        {/* Outros metadados opcionais que não sejam <title> ou viewport */}
       </Head>
       <body>
         <Main />

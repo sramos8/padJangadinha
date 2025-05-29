@@ -1,11 +1,24 @@
 import { useEffect, useState } from 'react';
-import { api } from '../lib/api';
+//import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
+import Cookies from 'js-cookie';
+import { useRouter } from 'next/router';
+import api from '../services/api'; // ou '@/services/api' se você usa paths personalizados
 
 export default function ListaVendas() {
   const [vendas, setVendas] = useState([]);
   const [produtosMap, setProdutosMap] = useState({});
+  const router = useRouter();
+  // Verifica se o usuário está autenticado
+
   useAuth();
+
+  useEffect(() => {
+    const token = Cookies.get('token')
+    if (!token) {
+      router.push('/login')
+    }
+  }, [])
 
   useEffect(() => {
     async function fetchData() {
@@ -45,47 +58,74 @@ export default function ListaVendas() {
     }
   };
 
+  const itensAgrupadosPorData = vendas.reduce((acc, item) => {
+    const data = new Date(item.created_at).toLocaleDateString();
+    if (!acc[data]) acc[data] = [];
+    acc[data].push(item);
+    return acc;
+  }, {});
+
+  const hoje = new Date().toLocaleDateString();
+
   return (
-    <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold">Vendas Realizadas</h1>
-      <table className="w-full border">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="p-2 border">Produto</th>
-            <th className="p-2 border">Quantidade</th>
-            <th className="p-2 border">Total (R$)</th>
-            <th className="p-2 border">Data</th>
-            <th className="p-2 border">Funcionário Responsável</th>
-            <th className="p-2 border">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {vendas.map((venda) => (
-            <tr key={venda.id} className="text-center">
-              <td className="border p-2">{produtosMap[venda.produto_id] || 'Desconhecido'}</td>
-              <td className="border p-2">{venda.quantidade}</td>
-              <td className="border p-2">{venda.total?.toFixed(2)}</td>
-              <td className="border p-2">{new Date(venda.created_at).toLocaleString()}</td>
-              <td className="border p-2">{venda.user?.nome || 'Desconhecido'}</td>
-              <td className="border p-2">
-                <button
-                  onClick={() => excluirVenda(venda.id)}
-                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                >
-                  Excluir
-                </button>
-              </td>
-            </tr>
-          ))}
-          {vendas.length === 0 && (
-            <tr>
-              <td colSpan={5} className="text-center p-4 text-gray-500">
-                Nenhuma venda registrada.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+    <div className="p-6 space-y-6">
+    <h1 className="text-2xl font-bold">Vendas Realizadas</h1>
+
+    <div className="space-y-4">
+      {Object.entries(itensAgrupadosPorData).map(([data, vendas]) => {
+        const isHoje = data === hoje;
+
+        return (
+          <details key={data} className="border rounded shadow-sm" open={isHoje}>
+            <summary className="cursor-pointer p-3 bg-gray-100 hover:bg-gray-200 font-medium">
+              {new Date(data).toLocaleDateString('pt-BR')} ({vendas.length} venda{vendas.length > 1 ? 's' : ''})
+            </summary>
+
+            <div className="overflow-x-auto">
+              <table className="table w-full">
+                <thead>
+                  <tr className="bg-gray-200">
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Total (R$)</th>
+                    <th>Data</th>
+                    <th className="text-center">Funcionário</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {vendas.map((venda) => (
+                    <tr key={venda.id} className="hover text-center">
+                      <td>{produtosMap[venda.produto_id] || 'Desconhecido'}</td>
+                      <td>{venda.quantidade}</td>
+                      <td>{venda.total?.toFixed(2)}</td>
+                      <td>{new Date(venda.created_at).toLocaleString('pt-BR')}</td>
+                      <td>{venda.users?.nome || 'Desconhecido'}</td>
+                      <td className="space-x-2">
+                        <button
+                          onClick={() => excluirVenda(venda.id)}
+                          className="btn btn-sm btn-danger"
+                        >
+                          Excluir
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {vendas.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="text-center p-4 text-gray-500">
+                        Nenhuma venda registrada.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </details>
+        );
+      })}
     </div>
-  );
+  </div>
+);
+
 }

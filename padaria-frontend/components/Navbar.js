@@ -8,7 +8,9 @@ import { Package, Archive, ShoppingCart, Users, ShoppingBasket } from 'lucide-re
 export default function Navbar() {
   const [nome, setNome] = useState('');
   const [user, setUser] = useState('');
+  const [dataHora, setDataHora] = useState('');
   const router = useRouter();
+
 
   useEffect(() => {
     const nomeUsuario = localStorage.getItem('nome');
@@ -19,8 +21,28 @@ export default function Navbar() {
     }
   }, []);
 
+    useEffect(() => {
+    const atualizarHora = () => {
+      const agora = new Date();
+      const dataFormatada = agora.toLocaleDateString('pt-BR');
+      const horaFormatada = agora.toLocaleTimeString('pt-BR');
+      setDataHora(`${dataFormatada} ${horaFormatada}`);
+    };
+
+    atualizarHora(); // inicial
+    const intervalo = setInterval(atualizarHora, 1000); // atualiza a cada segundo
+
+    return () => clearInterval(intervalo); // limpa ao desmontar
+  }, []);
+
   const handleLogout = () => {
     Cookies.remove('token');
+   
+
+    // 🔴 2. Remove dados do usuário do localStorage (se estiverem lá)
+    localStorage.removeItem('nome');
+    localStorage.removeItem('user');
+    
     router.push('/login');
   };
   
@@ -57,9 +79,11 @@ export default function Navbar() {
           <Link className="nav-link d-flex align-items-center gap-1 hover-effect" href="/vendas-lista"><ShoppingBasket size={16} />Lista de Vendas</Link>
           <Link className="nav-link d-flex align-items-center gap-1 hover-effect" href="/itens-produzidos"><ShoppingBasket size={16} />Atualizar Estoque</Link>
         </div>
-
+        
         {/* Alinhado totalmente à direita */}
-        <div className="d-flex align-items-center ms-auto gap-3"><span className="text-dark gap-5">{user.nome}
+        <div className="d-flex align-items-center ms-auto gap-3">
+          <div className="text-muted" style={{ fontSize: '0.8rem' }}>{dataHora}</div>
+           <span className="text-dark gap-5">{user.nome}
           <Link href="/usuarios" className="flex items-center space-x-1 hover:text-gray-300" alt="Usuários" title="Usuários" >   
             <Users size={16} />
         </Link>
